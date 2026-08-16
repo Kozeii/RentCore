@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('tenants', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('unit_id')->constrained()->onDelete('cascade');
+            $table->string('full_name');
+            $table->string('email')->unique();
+            $table->string('phone_number');
+            $table->date('lease_start_date');
+            $table->date('lease_end_date');
+            $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
         });
     }
