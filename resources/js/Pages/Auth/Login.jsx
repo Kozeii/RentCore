@@ -1,100 +1,54 @@
-import Checkbox from '@/Components/Checkbox';
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
+﻿import { Head, Link, useForm } from '@inertiajs/react';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Login({ status, canResetPassword }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
+export default function Login() {
+    const { data, setData, post, processing, errors } = useForm({
         email: '',
         password: '',
         remember: false,
     });
 
-    const submit = (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-
-        post(route('login'), {
-            onFinish: () => reset('password'),
-        });
+        post('/login');
     };
 
     return (
         <GuestLayout>
-            <Head title="Log in" />
-
-            {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
-                    {status}
+            <Head title="Login" />
+            <div className="bg-white rounded-xl shadow-lg p-8 border-t-4 border-rc-orange">
+                <div className="text-center mb-8">
+                    <h2 className="text-2xl font-bold text-rc-dark">Welcome Back!</h2>
+                    <p className="text-gray-500 mt-2">Login to your RentCore account</p>
                 </div>
-            )}
-
-            <form onSubmit={submit}>
-                <div>
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        isFocused={true}
-                        onChange={(e) => setData('email', e.target.value)}
-                    />
-
-                    <InputError message={errors.email} className="mt-2" />
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div>
+                        <label className="block text-sm font-medium text-rc-dark">Email</label>
+                        <input type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rc-orange" placeholder="your@email.com" required />
+                        {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email}</p>}
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-rc-dark">Password</label>
+                        <input type="password" value={data.password} onChange={(e) => setData('password', e.target.value)} className="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rc-orange" placeholder="********" required />
+                        {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password}</p>}
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <label className="flex items-center">
+                            <input type="checkbox" checked={data.remember} onChange={(e) => setData('remember', e.target.checked)} className="rounded border-gray-300 text-rc-orange focus:ring-rc-orange" />
+                            <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                        </label>
+                        <Link href="/forgot-password" className="text-sm text-rc-teal hover:text-rc-orange">Forgot password?</Link>
+                    </div>
+                    <button type="submit" disabled={processing} className="w-full px-4 py-3 bg-rc-orange text-white rounded-lg hover:bg-rc-orangeDark disabled:opacity-50 font-medium">
+                        {processing ? 'Logging in...' : 'Login'}
+                    </button>
+                </form>
+                <div className="mt-6 text-center">
+                    <p className="text-sm text-gray-600">
+                        Don't have an account? <Link href="/register" className="text-rc-orange hover:text-rc-orangeDark font-medium">Register here</Link>
+                    </p>
                 </div>
-
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
-
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="current-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
-
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
-
-                <div className="mt-4 block">
-                    <label className="flex items-center">
-                        <Checkbox
-                            name="remember"
-                            checked={data.remember}
-                            onChange={(e) =>
-                                setData('remember', e.target.checked)
-                            }
-                        />
-                        <span className="ms-2 text-sm text-gray-600">
-                            Remember me
-                        </span>
-                    </label>
-                </div>
-
-                <div className="mt-4 flex items-center justify-end">
-                    {canResetPassword && (
-                        <Link
-                            href={route('password.request')}
-                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        >
-                            Forgot your password?
-                        </Link>
-                    )}
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Log in
-                    </PrimaryButton>
-                </div>
-            </form>
+            </div>
         </GuestLayout>
     );
 }

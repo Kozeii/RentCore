@@ -1,10 +1,5 @@
-export default function InputError({ message, className = '', ...props }) {
+﻿export default function InputError({ message, className = '' }) {
     return message ? (
-        <p
-            {...props}
-            className={'text-sm text-red-600 ' + className}
-        >
-            {message}
-        </p>
+        <p className={'text-sm text-red-600 mt-1 ' + className}>{message}</p>
     ) : null;
 }
