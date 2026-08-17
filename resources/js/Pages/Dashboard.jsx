@@ -1,18 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { Spinner, Skeleton, Toast } from '@/Components/UI';
 import {
     BuildingOfficeIcon, HomeIcon, UserGroupIcon, CurrencyDollarIcon,
     PlusIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon,
     BanknotesIcon, WalletIcon, ChartBarIcon,
-    ExclamationCircleIcon, CheckCircleIcon,
+    ExclamationCircleIcon, CheckCircleIcon, ClockIcon,
 } from '@heroicons/react/24/outline';
 import {
     Chart as ChartJS,
     CategoryScale, LinearScale, PointElement, LineElement,
     BarElement, ArcElement, Title, Tooltip, Legend, Filler,
 } from 'chart.js';
-import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { Line, Bar, Doughnut, Pie } from 'react-chartjs-2';
 
 ChartJS.register(
     CategoryScale, LinearScale, PointElement, LineElement,
@@ -20,11 +21,24 @@ ChartJS.register(
 );
 
 export default function Dashboard() {
+    const [loading, setLoading] = useState(true);
+    const [toast, setToast] = useState(null);
+    const [activePeriod, setActivePeriod] = useState('month');
+
+    useEffect(() => {
+        setTimeout(() => setLoading(false), 1000);
+    }, []);
+
+    const showToast = (message, type = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
+
     const stats = [
-        { name: 'Total Buildings', value: '4', icon: BuildingOfficeIcon, color: 'bg-rc-orange' },
-        { name: 'Total Units', value: '70', icon: HomeIcon, color: 'bg-rc-teal' },
-        { name: 'Active Tenants', value: '58', icon: UserGroupIcon, color: 'bg-rc-dark' },
-        { name: 'Monthly Income', value: '₱95,000', icon: CurrencyDollarIcon, color: 'bg-rc-orange' },
+        { name: 'Total Buildings', value: '4', icon: BuildingOfficeIcon, color: 'bg-rc-orange', change: '+2.5%' },
+        { name: 'Total Units', value: '70', icon: HomeIcon, color: 'bg-rc-teal', change: '+5.2%' },
+        { name: 'Active Tenants', value: '58', icon: UserGroupIcon, color: 'bg-rc-dark', change: '+3.8%' },
+        { name: 'Monthly Income', value: '₱95,000', icon: CurrencyDollarIcon, color: 'bg-rc-orange', change: '+8.1%' },
     ];
 
     // Line Chart - Cash Flow
@@ -74,7 +88,7 @@ export default function Dashboard() {
             },
             {
                 label: 'Outstanding',
-                data: [10000, 10000, 10000, 10000, 10000, 10000],
+                data: [10000, 8000, 10000, 10000, 10000, 10000],
                 backgroundColor: 'rgba(29, 33, 40, 0.6)',
                 borderColor: '#1D2128',
                 borderWidth: 2,
@@ -89,6 +103,17 @@ export default function Dashboard() {
         datasets: [{
             data: [62, 6, 2],
             backgroundColor: ['#FF9E20', '#215E61', '#1D2128'],
+            borderColor: '#fff',
+            borderWidth: 3,
+        }],
+    };
+
+    // Pie - Expense Distribution
+    const pieData = {
+        labels: ['Maintenance', 'Utilities', 'Insurance', 'Tax', 'Management'],
+        datasets: [{
+            data: [18500, 12800, 9800, 8500, 7200],
+            backgroundColor: ['#FF9E20', '#215E61', '#1D2128', '#E6850A', '#2A7A7E'],
             borderColor: '#fff',
             borderWidth: 3,
         }],
@@ -149,9 +174,19 @@ export default function Dashboard() {
             legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { size: 12, weight: '600' } } },
             tooltip: {
                 ...tooltipOptions,
-                callbacks: {
-                    label: (ctx) => `${ctx.label}: ${ctx.parsed} units`,
-                },
+                callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed} units` },
+            },
+        },
+    };
+
+    const pieOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { size: 12, weight: '600' } } },
+            tooltip: {
+                ...tooltipOptions,
+                callbacks: { label: (ctx) => `${ctx.label}: ₱${ctx.parsed.toLocaleString()}` },
             },
         },
     };
@@ -164,9 +199,31 @@ export default function Dashboard() {
         { id: 5, desc: 'Electricity Bill', amount: '-₱8,000', type: 'expense', date: 'Jun 12' },
     ];
 
+    if (loading) {
+        return (
+            <AuthenticatedLayout>
+                <Head title="Dashboard" />
+                <div className="space-y-6">
+                    <div className="grid grid-cols-4 gap-6">
+                        {[...Array(4)].map((_, i) => (
+                            <div key={i} className="animate-pulse bg-white rounded-xl h-28"></div>
+                        ))}
+                    </div>
+                    <div className="grid grid-cols-2 gap-6">
+                        <div className="animate-pulse bg-white rounded-xl h-80"></div>
+                        <div className="animate-pulse bg-white rounded-xl h-80"></div>
+                    </div>
+                </div>
+            </AuthenticatedLayout>
+        );
+    }
+
     return (
         <AuthenticatedLayout>
             <Head title="Dashboard" />
+            
+            {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
             <div className="space-y-6">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -174,9 +231,14 @@ export default function Dashboard() {
                         <h1 className="text-3xl font-bold text-rc-dark">Dashboard</h1>
                         <p className="text-gray-500 mt-1">Property and financial overview</p>
                     </div>
-                    <Link href="/buildings/create" className="px-4 py-2 bg-rc-orange text-white rounded-lg hover:bg-rc-orangeDark">
-                        <PlusIcon className="h-5 w-5 inline mr-1" /> Add Building
-                    </Link>
+                    <div className="flex gap-3">
+                        <button onClick={() => showToast('Report exported successfully!')} className="px-4 py-2 bg-rc-teal text-white rounded-lg hover:bg-rc-tealLight">
+                            📥 Export Report
+                        </button>
+                        <Link href="/buildings/create" className="px-4 py-2 bg-rc-orange text-white rounded-lg hover:bg-rc-orangeDark">
+                            <PlusIcon className="h-5 w-5 inline mr-1" /> Add Building
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Stats Cards */}
@@ -192,29 +254,41 @@ export default function Dashboard() {
                                     <stat.icon className="h-6 w-6 text-white" />
                                 </div>
                             </div>
+                            <div className="mt-3 flex items-center text-sm">
+                                <ArrowTrendingUpIcon className="h-4 w-4 text-rc-teal mr-1" />
+                                <span className="text-rc-teal font-medium">{stat.change}</span>
+                                <span className="text-gray-400 ml-1">vs last month</span>
+                            </div>
                         </div>
+                    ))}
+                </div>
+
+                {/* Period Filter */}
+                <div className="flex gap-2">
+                    {['week', 'month', 'year'].map((period) => (
+                        <button
+                            key={period}
+                            onClick={() => setActivePeriod(period)}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium ${activePeriod === period ? 'bg-rc-orange text-white' : 'bg-white text-rc-dark border border-gray-200'}`}
+                        >
+                            {period.charAt(0).toUpperCase() + period.slice(1)}
+                        </button>
                     ))}
                 </div>
 
                 {/* Charts Row 1 */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Line Chart - Cash Flow */}
+                    {/* Line Chart */}
                     <div className="bg-white rounded-xl shadow-sm p-6 border-t-4 border-rc-orange">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-rc-dark">💹 Cash Flow Analysis</h3>
-                            <span className="text-xs text-gray-400">Hover for details</span>
-                        </div>
+                        <h3 className="text-lg font-semibold text-rc-dark mb-4">💹 Cash Flow Analysis</h3>
                         <div className="h-[300px]">
                             <Line data={lineData} options={lineOptions} />
                         </div>
                     </div>
 
-                    {/* Bar Chart - Rent Collection */}
+                    {/* Bar Chart */}
                     <div className="bg-white rounded-xl shadow-sm p-6 border-t-4 border-rc-teal">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-rc-dark">📊 Rent Collection</h3>
-                            <span className="text-xs text-gray-400">Hover for details</span>
-                        </div>
+                        <h3 className="text-lg font-semibold text-rc-dark mb-4">📊 Rent Collection</h3>
                         <div className="h-[300px]">
                             <Bar data={barData} options={barOptions} />
                         </div>
@@ -223,75 +297,66 @@ export default function Dashboard() {
 
                 {/* Charts Row 2 */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Doughnut - Occupancy */}
+                    {/* Doughnut */}
                     <div className="bg-white rounded-xl shadow-sm p-6 border-t-4 border-rc-dark">
                         <h3 className="text-lg font-semibold text-rc-dark mb-4">🏠 Occupancy Rate</h3>
                         <div className="h-[250px]">
                             <Doughnut data={doughnutData} options={doughnutOptions} />
                         </div>
-                        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
-                            <div>
-                                <p className="text-xl font-bold text-rc-orange">62</p>
-                                <p className="text-xs text-gray-500">Occupied</p>
-                            </div>
-                            <div>
-                                <p className="text-xl font-bold text-rc-teal">6</p>
-                                <p className="text-xs text-gray-500">Vacant</p>
-                            </div>
-                            <div>
-                                <p className="text-xl font-bold text-rc-dark">2</p>
-                                <p className="text-xs text-gray-500">Maintenance</p>
-                            </div>
+                    </div>
+
+                    {/* Pie Chart */}
+                    <div className="bg-white rounded-xl shadow-sm p-6 border-t-4 border-rc-orange">
+                        <h3 className="text-lg font-semibold text-rc-dark mb-4">💰 Expense Distribution</h3>
+                        <div className="h-[250px]">
+                            <Pie data={pieData} options={pieOptions} />
                         </div>
                     </div>
 
-                    {/* Recent Transactions */}
-                    <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border-t-4 border-rc-orange">
-                        <h3 className="text-lg font-semibold text-rc-dark mb-4">Recent Transactions</h3>
+                    {/* Quick Stats */}
+                    <div className="bg-white rounded-xl shadow-sm p-6 border-t-4 border-rc-teal">
+                        <h3 className="text-lg font-semibold text-rc-dark mb-4">Quick Overview</h3>
                         <div className="space-y-3">
-                            {recentTransactions.map((t) => (
-                                <div key={t.id} className="flex items-center justify-between p-3 bg-rc-light rounded-lg hover:bg-rc-teal/10 transition-colors">
-                                    <div className="flex items-center">
-                                        {t.type === 'income' ? (
-                                            <CheckCircleIcon className="h-5 w-5 text-rc-teal mr-3" />
-                                        ) : (
-                                            <ExclamationCircleIcon className="h-5 w-5 text-rc-orange mr-3" />
-                                        )}
-                                        <div>
-                                            <p className="text-sm font-medium text-rc-dark">{t.desc}</p>
-                                            <p className="text-xs text-gray-500">{t.date}</p>
-                                        </div>
-                                    </div>
-                                    <span className={`font-semibold ${t.type === 'income' ? 'text-rc-teal' : 'text-rc-orange'}`}>{t.amount}</span>
-                                </div>
-                            ))}
+                            <div className="flex justify-between p-3 bg-rc-light rounded-lg">
+                                <span className="text-sm">Total Income</span>
+                                <span className="font-bold text-rc-teal">₱95,000</span>
+                            </div>
+                            <div className="flex justify-between p-3 bg-rc-light rounded-lg">
+                                <span className="text-sm">Total Expenses</span>
+                                <span className="font-bold text-rc-orange">₱56,800</span>
+                            </div>
+                            <div className="flex justify-between p-3 bg-rc-light rounded-lg">
+                                <span className="text-sm">Net Profit</span>
+                                <span className="font-bold text-rc-dark">₱38,200</span>
+                            </div>
                         </div>
-                        <Link href="/transactions" className="block mt-4 text-center text-sm text-rc-teal hover:text-rc-orange">
-                            View All Transactions →
-                        </Link>
                     </div>
                 </div>
 
-                {/* Financial Summary */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-gradient-to-br from-rc-teal to-rc-dark rounded-xl p-6 text-white">
-                        <BanknotesIcon className="h-8 w-8 opacity-50" />
-                        <p className="text-sm opacity-80 mt-2">Total Income</p>
-                        <p className="text-3xl font-bold">₱95,000</p>
-                        <p className="text-xs mt-2 opacity-70">↑ 8% from last month</p>
+                {/* Recent Transactions */}
+                <div className="bg-white rounded-xl shadow-sm p-6 border-t-4 border-rc-orange">
+                    <h3 className="text-lg font-semibold text-rc-dark mb-4">Recent Transactions</h3>
+                    <div className="space-y-3">
+                        {recentTransactions.map((t) => (
+                            <div key={t.id} className="flex items-center justify-between p-3 bg-rc-light rounded-lg hover:bg-rc-teal/10 transition-colors">
+                                <div className="flex items-center">
+                                    {t.type === 'income' ? (
+                                        <CheckCircleIcon className="h-5 w-5 text-rc-teal mr-3" />
+                                    ) : (
+                                        <ExclamationCircleIcon className="h-5 w-5 text-rc-orange mr-3" />
+                                    )}
+                                    <div>
+                                        <p className="text-sm font-medium text-rc-dark">{t.desc}</p>
+                                        <p className="text-xs text-gray-500">{t.date}</p>
+                                    </div>
+                                </div>
+                                <span className={`font-semibold ${t.type === 'income' ? 'text-rc-teal' : 'text-rc-orange'}`}>{t.amount}</span>
+                            </div>
+                        ))}
                     </div>
-                    <div className="bg-gradient-to-br from-rc-orange to-rc-orangeDark rounded-xl p-6 text-white">
-                        <WalletIcon className="h-8 w-8 opacity-50" />
-                        <p className="text-sm opacity-80 mt-2">Total Expenses</p>
-                        <p className="text-3xl font-bold">₱56,800</p>
-                        <p className="text-xs mt-2 opacity-70">↓ 2% from last month</p>
-                    </div>
-                    <div className="bg-gradient-to-br from-rc-dark to-gray-800 rounded-xl p-6 text-white">
-                        <ChartBarIcon className="h-8 w-8 opacity-50" />
-                        <p className="text-sm opacity-80 mt-2">Net Profit</p>
-                        <p className="text-3xl font-bold">₱38,200</p>
-                        <p className="text-xs mt-2 opacity-70">↑ 12% from last month</p>
-                    </div>
+                    <Link href="/transactions" className="block mt-4 text-center text-sm text-rc-teal hover:text-rc-orange">
+                        View All Transactions →
+                    </Link>
                 </div>
             </div>
         </AuthenticatedLayout>
