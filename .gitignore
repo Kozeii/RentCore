@@ -1,0 +1,29 @@
+# Dependencies
+/node_modules
+/vendor
+
+# Laravel
+.env
+.env.backup
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+/storage/*.key
+
+# Build
+/public/build
+/public/hot
+
+# IDE
+/.idea
+/.vscode
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+storage/logs/*.log
