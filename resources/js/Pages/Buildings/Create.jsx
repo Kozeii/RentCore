@@ -6,7 +6,7 @@ export default function Create() {
         name: '',
         address: '',
         city: '',
-        state: '',
+        province: '',
         zip_code: '',
         description: '',
     });
@@ -44,8 +44,8 @@ export default function Create() {
                                 <input type="text" value={data.city} onChange={(e) => setData('city', e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-lg" required />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-rc-dark">State *</label>
-                                <input type="text" value={data.state} onChange={(e) => setData('state', e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-lg" required />
+                                <label className="block text-sm font-medium text-rc-dark">Province *</label>
+                                <input type="text" value={data.province} onChange={(e) => setData('province', e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-lg" required />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-rc-dark">ZIP Code *</label>

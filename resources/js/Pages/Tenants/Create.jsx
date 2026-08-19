@@ -1,13 +1,13 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 
-export default function Create() {
+export default function Create({ buildings = [], units = [] }) {
     const { data, setData, post, processing, errors } = useForm({
-        name: '',
+        full_name: '',
         email: '',
         phone: '',
-        unit: '',
-        building: '',
+        building_id: '',
+        unit_id: '',
         monthly_rent: '',
         deposit: '',
         lease_start: '',
@@ -35,17 +35,20 @@ export default function Create() {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-rc-dark">Full Name *</label>
-                                <input type="text" value={data.name} onChange={(e) => setData('name', e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-lg" required />
+                                <input type="text" value={data.full_name} onChange={(e) => setData('full_name', e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-lg" required />
+                                {errors.full_name && <span className="text-xs text-red-500">{errors.full_name}</span>}
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-rc-dark">Email *</label>
                                 <input type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-lg" required />
+                                {errors.email && <span className="text-xs text-red-500">{errors.email}</span>}
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-rc-dark">Phone *</label>
                                 <input type="tel" value={data.phone} onChange={(e) => setData('phone', e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-lg" required />
+                                {errors.phone && <span className="text-xs text-red-500">{errors.phone}</span>}
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-rc-dark">Status</label>
@@ -59,11 +62,21 @@ export default function Create() {
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-rc-dark">Building</label>
-                                <input type="text" value={data.building} onChange={(e) => setData('building', e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-lg" />
+                                <select value={data.building_id} onChange={(e) => setData('building_id', e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-lg">
+                                    <option value="">Select Building</option>
+                                    {buildings.map((b) => (
+                                        <option key={b.id} value={b.id}>{b.name}</option>
+                                    ))}
+                                </select>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-rc-dark">Unit</label>
-                                <input type="text" value={data.unit} onChange={(e) => setData('unit', e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-lg" />
+                                <select value={data.unit_id} onChange={(e) => setData('unit_id', e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-lg">
+                                    <option value="">Select Unit</option>
+                                    {units.map((u) => (
+                                        <option key={u.id} value={u.id}>{u.unit_number}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
@@ -84,6 +97,7 @@ export default function Create() {
                             <div>
                                 <label className="block text-sm font-medium text-rc-dark">Lease End</label>
                                 <input type="date" value={data.lease_end} onChange={(e) => setData('lease_end', e.target.value)} className="mt-1 w-full px-4 py-2 border rounded-lg" />
+                                {errors.lease_end && <span className="text-xs text-red-500">{errors.lease_end}</span>}
                             </div>
                         </div>
                         <div className="flex justify-end gap-3">

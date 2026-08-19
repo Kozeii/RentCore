@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BuildingController;
+use App\Http\Controllers\UnitController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\TransactionController;
@@ -22,23 +23,10 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Buildings
-    Route::get('/buildings', [BuildingController::class, 'index'])->name('buildings.index');
-    Route::get('/buildings/create', [BuildingController::class, 'create'])->name('buildings.create');
-    Route::post('/buildings', [BuildingController::class, 'store'])->name('buildings.store');
-    Route::get('/buildings/{building}', [BuildingController::class, 'show'])->name('buildings.show');
-    Route::get('/buildings/{building}/edit', [BuildingController::class, 'edit'])->name('buildings.edit');
-    Route::put('/buildings/{building}', [BuildingController::class, 'update'])->name('buildings.update');
-    Route::delete('/buildings/{building}', [BuildingController::class, 'destroy'])->name('buildings.destroy');
-
-    // Tenants
-    Route::get('/tenants', [TenantController::class, 'index'])->name('tenants.index');
-    Route::get('/tenants/create', [TenantController::class, 'create'])->name('tenants.create');
-    Route::post('/tenants', [TenantController::class, 'store'])->name('tenants.store');
-    Route::get('/tenants/{tenant}', [TenantController::class, 'show'])->name('tenants.show');
-    Route::get('/tenants/{tenant}/edit', [TenantController::class, 'edit'])->name('tenants.edit');
-    Route::put('/tenants/{tenant}', [TenantController::class, 'update'])->name('tenants.update');
-    Route::delete('/tenants/{tenant}', [TenantController::class, 'destroy'])->name('tenants.destroy');
+    // Core Entity Resources (Handles index, create, store, show, edit, update, destroy automatically)
+    Route::resource('buildings', BuildingController::class);
+    Route::resource('units', UnitController::class);
+    Route::resource('tenants', TenantController::class);
 
     // Documents
     Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
@@ -53,6 +41,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Messages
     Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
     Route::post('/messages/send', [MessageController::class, 'send'])->name('messages.send');
+
+    // Profile Management
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__.'/auth.php';
