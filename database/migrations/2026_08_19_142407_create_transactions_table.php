@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->foreignId('unit_id')->nullable()->constrained('units')->nullOnDelete();
-            $table->foreignId('tenant_id')->nullable()->constrained()->nullOnDelete();
             $table->string('type'); // Rent, Deposit, Late Fee, Maintenance, Utility
             $table->decimal('amount', 10, 2);
             $table->string('status')->default('Pending'); // Paid, Pending, Overdue, Cancelled
